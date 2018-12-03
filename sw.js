@@ -1,5 +1,4 @@
-const assetCacheName = 'restaurant-review-cache-v3';
-// jhgjhgdsfgjhdsf
+const assetCacheName = 'restaurant-review-cache-v1';
 
 self.addEventListener('install', (event) => {
   console.log('Service worker installed.');
