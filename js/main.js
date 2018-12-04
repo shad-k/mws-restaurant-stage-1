@@ -81,7 +81,8 @@ initMap = () => {
   self.newMap = L.map('map', {
         center: [40.722216, -73.987501],
         zoom: 12,
-        scrollWheelZoom: false
+        scrollWheelZoom: false,
+        keyboard: false
       });
   L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.jpg70?access_token={mapboxToken}', {
     mapboxToken: 'pk.eyJ1Ijoic2hhZC1rIiwiYSI6ImNqbmtsYjlrMjE3YW4za28zb2JvYnczMHkifQ.nF6WLDVR2zc93Inyy_th4A',
@@ -91,6 +92,13 @@ initMap = () => {
       'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
     id: 'mapbox.streets'
   }).addTo(newMap);
+
+  /**
+   * The map and the markers were already made non-focussable by adding `keyboard`: false in the
+   * respective options passed to them.
+   * Making controls and attribution as non-focussable as well.
+   */
+  skipMapFocus();
 
   updateRestaurants();
 }

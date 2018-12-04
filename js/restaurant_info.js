@@ -21,7 +21,8 @@ initMap = () => {
       self.newMap = L.map('map', {
         center: [restaurant.latlng.lat, restaurant.latlng.lng],
         zoom: 16,
-        scrollWheelZoom: false
+        scrollWheelZoom: false,
+        keyboard: false
       });
       L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.jpg70?access_token={mapboxToken}', {
         mapboxToken: 'pk.eyJ1Ijoic2hhZC1rIiwiYSI6ImNqbmtsYjlrMjE3YW4za28zb2JvYnczMHkifQ.nF6WLDVR2zc93Inyy_th4A',

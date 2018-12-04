@@ -48,7 +48,7 @@ article, aside, canvas, details, figcaption, figure, footer, header, hgroup, men
 }
 #maincontent {
   background-color: #f3f3f3;
-  height: 90%;
+  min-height: 90%;
   overflow: auto;
 }
 #footer {
@@ -222,8 +222,6 @@ nav h1 a {
   width: 100%;
 }
 .inside #footer {
-  bottom: 0;
-  position: fixed;
   width: 100%;
   height: 10%;
 }
@@ -365,10 +363,10 @@ nav h1 a {
   }
 
   .inside #map-container {
-    width: 50%;
+    width: 47%;
     position: absolute;
-    right: 0;
-    top: 110px;
-    height: 80%;
+    right: 3%;
+    top: 215px;
+    height: 74.5%;
   }
 }

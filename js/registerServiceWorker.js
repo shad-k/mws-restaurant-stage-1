@@ -15,7 +15,6 @@ registerServiceWorker = () => {
 
   navigator.serviceWorker.register('./sw.js').then(function(reg) {
     if (!navigator.serviceWorker.controller) {
-      console.log('Something fishy');
       return;
     }
 
