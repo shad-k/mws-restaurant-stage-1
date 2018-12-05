@@ -33,6 +33,7 @@ initMap = () => {
         id: 'mapbox.streets'    
       }).addTo(newMap);
       fillBreadcrumb();
+      skipRestaurantMapFocus();
       DBHelper.mapMarkerForRestaurant(self.restaurant, self.newMap);
     }
   });
@@ -85,6 +86,7 @@ fetchRestaurantFromURL = (callback) => {
 fillRestaurantHTML = (restaurant = self.restaurant) => {
   const name = document.getElementById('restaurant-name');
   name.innerHTML = restaurant.name;
+  name.setAttribute( 'tabindex', 0 );
 
   const address = document.getElementById('restaurant-address');
   address.innerHTML = restaurant.address;
@@ -131,6 +133,7 @@ fillReviewsHTML = (reviews = self.restaurant.reviews) => {
   const container = document.getElementById('reviews-container');
   const title = document.createElement('h2');
   title.innerHTML = 'Reviews';
+  title.setAttribute( 'tabindex', 0 );
   container.appendChild(title);
 
   if (!reviews) {
