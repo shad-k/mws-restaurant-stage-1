@@ -1,5 +1,4 @@
 skipMapFocus = () => {
-  debugger;
   const topHeader = document.querySelector('header nav h1 a');
   const neighborhoodSelect = document.getElementById( 'neighborhoods-select' );
 
