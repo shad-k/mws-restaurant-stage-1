@@ -15,11 +15,20 @@ class DBHelper {
     if(!navigator.serviceWorker)
       return Promise.resolve();
     
-    this._db =  idb.open('restaurants', 1, (upgradeDb) => {
-      const store = upgradeDb.createObjectStore('restaurants', {
-        keyPath: 'id'
-      });
-    });
+    this._db =  idb.open('restaurants', 2, (upgradeDb) => {
+
+      switch(upgradeDb.oldVersion) {
+        case 0:
+          const store = upgradeDb.createObjectStore('restaurants', {
+            keyPath: 'id'
+          });
+        case 1:
+          const reviewStore = upgradeDb.createObjectStore('reviews', {
+            keyPath: 'id'
+          });
+          reviewStore.createIndex('restaurantId', 'restaurant_id');
+      }
+    }, (e) => console.log(e));
 
     return this._db;
   }
@@ -261,17 +270,63 @@ class DBHelper {
       })
       marker.addTo(newMap);
     return marker;
-  } 
-  /* static mapMarkerForRestaurant(restaurant, map) {
-    const marker = new google.maps.Marker({
-      position: restaurant.latlng,
-      title: restaurant.name,
-      url: DBHelper.urlForRestaurant(restaurant),
-      map: map,
-      animation: google.maps.Animation.DROP}
-    );
-    return marker;
-  } */
+  }
 
+  static _checkReviewsInIDB(id) {
+    return this._db.then((db) => {
+      if(!db)
+        return Promise.reject();
+      const transaction = db.transaction('reviews', 'readonly');
+      const reviewStore = transaction.objectStore('reviews');
+      const restaurantIndex = reviewStore.index('restaurantId');
+
+      return restaurantIndex.getAll(parseInt(id)).then((reviews) => {
+        if(typeof reviews !== 'undefined') {
+          return Promise.resolve(reviews);
+        }
+
+        return Promise.reject();
+      });
+    });
+  }
+
+  static _getReviews(id, callback) {
+    // fetch all restaurants with proper error handling.
+    fetch( `http://localhost:1337/reviews/?restaurant_id=${id}` )
+      .then( ( response ) => {
+        if ( response.status === 200 )
+          return response.json();
+        else
+          throw new Error( `Request failed. Returned status of ${response.status}` );
+      } ).then( ( reviews ) => {
+        this._db.then((db) => {
+          if(!db)
+            return;
+
+          const transaction = db.transaction('reviews', 'readwrite');
+          const store = transaction.objectStore('reviews');
+          
+          reviews.forEach((review) => {
+            store.put(review);
+          });
+        });
+        if (callback)
+          callback( null, reviews );
+      } ).catch( ( error ) => {
+        if(callback)
+          callback( 'Restaurant does not exist', null );
+        else
+          console.log("Failed to fetch reviews for: ", id);
+      } );
+  }
+
+  static fetchRestaurantReviews(id, callback) {
+    const cachedReviews = DBHelper._checkReviewsInIDB(id);
+    cachedReviews.then((reviews) => {
+      DBHelper._getReviews(id);
+      callback(null, reviews);
+    }).catch((e) => {
+      DBHelper._getReviews(id, callback);
+    });
+  }
 }
-
