@@ -55,6 +55,32 @@
     <section id="reviews-container">
       <ul id="reviews-list"></ul>
     </section>
+    <section id="reviews-form">
+      <form aria-labelledby="review-legend">
+        <fieldset>
+          <legend id="review-legend">
+            Add a review
+          </legend>
+
+          <label for="name">Name: </label>
+          <input type="text" name="name" placeholder="Enter your name">
+
+          <label for="rating">Rating: </label>
+          <select name="rating" id="rating">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+          </select>
+
+          <label for="comments">Review: </label>
+          <textarea name="comments" id="comments" cols="30" rows="10"></textarea>
+
+          <button type="submit">Submit</button>
+        </fieldset>
+      </form>
+    </section>
     <!-- End reviews -->
   </main>
   <!-- End main -->

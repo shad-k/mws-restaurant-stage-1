@@ -9,6 +9,10 @@ registerServiceWorker();
 document.addEventListener('DOMContentLoaded', (event) => {  
   DBHelper.setupIDB().then(() => {
     initMap();
+    const reviewForm = document.querySelector('#reviews-form form');
+    if(reviewForm) {
+      reviewForm.addEventListener('submit', (e) => DBHelper.handleSubmit(e, getParameterByName('id')));
+    }
   });
 });
 

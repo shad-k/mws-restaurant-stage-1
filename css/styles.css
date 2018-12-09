@@ -293,6 +293,17 @@ nav h1 a {
   color: #666;
 }
 
+#reviews-form fieldset {
+  display: flex;
+}
+
+#reviews-form input, #reviews-form textarea {
+  border-radius: 10px;
+  border: 1px solid #DDD;
+  padding: 10px;
+  min-height: 30px;
+}
+
 
 @media screen and (min-width: 700px) {
   #restaurants-list li {

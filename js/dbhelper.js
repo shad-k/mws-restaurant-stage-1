@@ -307,6 +307,7 @@ class DBHelper {
           const store = transaction.objectStore('reviews');
           
           reviews.forEach((review) => {
+            console.log(review);
             store.put(review);
           });
         });
@@ -328,5 +329,59 @@ class DBHelper {
     }).catch((e) => {
       DBHelper._getReviews(id, callback);
     });
+  }
+
+  static _updateReviews(id) {
+    fetch(`http://localhost:1337/reviews?restaurant_id=${id}`)
+      .then((response) => {
+        return response.json();
+      }).then((reviews) => {
+        this._db.then((db) => {
+          if(!db)
+            return;
+
+          const transaction = db.transaction('reviews', 'readwrite');
+          const reviewStore = transaction.objectStore('reviews');
+          reviews.forEach((review) => {
+            reviewStore.put(review);
+          });
+          transaction.complete.then(() => {
+            console.log('reload');
+            window.location.reload();
+          });
+        })
+      }).catch((error) => {
+        console.log(error);
+      });
+  }
+
+  static _attemptReviewSubmit(data) {
+    fetch('http://localhost:1337/reviews/', {
+      method: "POST",
+      "headers": {
+        "Content-Type": "application/json; charset=utf-8"
+      },
+      body: JSON.stringify(data)
+    }).then(() => {  
+      DBHelper._updateReviews(data.restaurant_id);
+    }).catch((error) => {
+
+    });
+  }
+
+  static handleSubmit(event, id) {
+    event.preventDefault();
+    const name = event.target.name.value;
+    const rating = event.target.rating.value;
+    const comments = event.target.comments.value;
+
+    const data = {
+      restaurant_id: parseInt(id),
+      name,
+      rating,
+      comments
+    };
+
+    DBHelper._attemptReviewSubmit(data);
   }
 }
