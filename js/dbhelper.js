@@ -2,7 +2,6 @@
  * Common database helper functions.
  */
 class DBHelper {
-
   /**
    * Database URL.
    * Change this to restaurants.json file location on your server.
@@ -12,10 +11,35 @@ class DBHelper {
     return `http://localhost:${port}/data/restaurants.json`;
   }
 
-  /**
-   * Fetch all restaurants.
-   */
-  static fetchRestaurants( callback ) {
+  static setupIDB() {
+    if(!navigator.serviceWorker)
+      return Promise.resolve();
+    
+    this._db =  idb.open('restaurants', 1, (upgradeDb) => {
+      const store = upgradeDb.createObjectStore('restaurants', {
+        keyPath: 'id'
+      });
+      console.log("Hello");
+    });
+
+    return this._db;
+  }
+
+  static _checkIDB() {
+    return this._db.then((db) => {
+      if(!db)
+        return Promise.reject(false);
+
+      const transaction = db.transaction('restaurants', 'readonly');
+      const store = transaction.objectStore('restaurants');
+
+      return store.getAll().then((restaurants) => {
+        return Promise.resolve(restaurants);
+      });
+    });
+  }
+
+  static _fetchAndUpdateRestaurants(callback) {
     fetch( 'http://localhost:1337/restaurants' )
       .then( ( response ) => {
         if ( response.status === 200 )
@@ -23,10 +47,52 @@ class DBHelper {
         else
           throw new Error( `Request failed. Returned status of ${response.status}` );
       } ).then( ( restaurants) => {
-        callback( null, restaurants );
+        // Empty the idb and re-enter the json data
+        this._db.then((db) => {
+          if(!db) return;
+
+          const transaction = db.transaction('restaurants', 'readwrite');
+          const store = transaction.objectStore('restaurants');
+
+          store.clear();
+
+          restaurants.forEach((restaurant) => {
+            store.put(restaurant);
+          });
+        });
+        if(callback)
+          callback( null, restaurants );
       } ).catch( ( error ) => {
-        callback( error, null );
+        if(callback)
+          callback( error, null );
+        else
+          console.log("Something went wrong: ", error);
       })
+  }
+
+  /**
+   * Fetch all restaurants.
+   */
+  static fetchRestaurants( callback ) {
+    console.log("Calling checkIDB");
+    const cachedJSON = DBHelper._checkIDB();
+    cachedJSON.then((restaurants) => {
+      console.log("cachedJSON resolved");
+      if(restaurants.length > 0) {
+        console.log("Fetching and updating idb");
+        DBHelper._fetchAndUpdateRestaurants();
+        console.log("Callback called");
+        callback(null, restaurants);
+        return Promise.resolve();
+      } else {
+        console.log("restaurants store doesn't have any restaurants");
+        throw new Error("No restaurants found");
+      }
+    }).catch((e) => {
+      console.log("cachedJSON rejected", e);
+      console.log("Fetching and entering into idb");
+      DBHelper._fetchAndUpdateRestaurants(callback);
+    })
   }
 
   /**
