@@ -15,7 +15,7 @@ class DBHelper {
     if(!navigator.serviceWorker)
       return Promise.resolve();
     
-    this._db =  idb.open('restaurants', 2, (upgradeDb) => {
+    this._db =  idb.open('restaurants', 4, (upgradeDb) => {
 
       switch(upgradeDb.oldVersion) {
         case 0:
@@ -27,9 +27,31 @@ class DBHelper {
             keyPath: 'id'
           });
           reviewStore.createIndex('restaurantId', 'restaurant_id');
+        case 2:
+          upgradeDb.createObjectStore('offlineReviews', {
+            autoIncrement: true
+          });
+        case 3:
       }
     }, (e) => console.log(e));
+    this._db.then((db) => {
+      if(!db)
+        return;
 
+      const transaction = db.transaction('offlineReviews', 'readwrite');
+      const offlineStore = transaction.objectStore('offlineReviews');
+      offlineStore.openCursor().then(function submitAndDelete(review) {
+        if(!review)
+        return;
+        DBHelper._submitReview(review.value).then((response) => {
+          return response.json();
+        }).then((review) => {
+          DBHelper._updateReviews(review);
+        });
+        review.delete();
+        review.continue().then(submitAndDelete);
+      });
+    });
     return this._db;
   }
 
@@ -305,9 +327,8 @@ class DBHelper {
 
           const transaction = db.transaction('reviews', 'readwrite');
           const store = transaction.objectStore('reviews');
-          
+          store.clear();
           reviews.forEach((review) => {
-            console.log(review);
             store.put(review);
           });
         });
@@ -331,42 +352,75 @@ class DBHelper {
     });
   }
 
-  static _updateReviews(id) {
-    fetch(`http://localhost:1337/reviews?restaurant_id=${id}`)
-      .then((response) => {
-        return response.json();
-      }).then((reviews) => {
-        this._db.then((db) => {
-          if(!db)
-            return;
+  static _updateReviews(data) {
+    this._db.then((db) => {
+      if(!db)
+        return;
 
-          const transaction = db.transaction('reviews', 'readwrite');
-          const reviewStore = transaction.objectStore('reviews');
-          reviews.forEach((review) => {
-            reviewStore.put(review);
-          });
-          transaction.complete.then(() => {
-            console.log('reload');
-            window.location.reload();
-          });
-        })
-      }).catch((error) => {
-        console.log(error);
+      const transaction = db.transaction('reviews', 'readwrite');
+      const reviewStore = transaction.objectStore('reviews');
+      console.log(data);
+      reviewStore.put(data);
+      transaction.complete.then(() => {
+        console.log('reload');
+        window.location.reload();
       });
+    }).catch((error) => {
+      console.log(error);
+    });
   }
 
-  static _attemptReviewSubmit(data) {
-    fetch('http://localhost:1337/reviews/', {
+  static _submitOfflineReviews() {
+    this._db.then((db) => {
+      if(!db)
+        return;
+
+      const transaction = db.transaction('offlineReviews', 'readwrite');
+      const offlineStore = transaction.objectStore('offlineReviews');
+
+      offlineStore.openCursor().then(function submitAndDelete(review) {
+        if(!review)
+          return;
+        DBHelper._submitReview(review.value).then((response) => {
+          return response.json();
+        }).then((review) => {
+          DBHelper._updateReviews(review);
+        });
+        review.delete();
+        return review.continue().then(submitAndDelete);
+      });
+    });
+  }
+
+  static _submitReview(data) {
+    return fetch('http://localhost:1337/reviews/', {
       method: "POST",
       "headers": {
         "Content-Type": "application/json; charset=utf-8"
       },
       body: JSON.stringify(data)
-    }).then(() => {  
-      DBHelper._updateReviews(data.restaurant_id);
-    }).catch((error) => {
-
     });
+  }
+
+  static _attemptReviewSubmit(data) {
+    DBHelper._submitReview(data).then((response) => {
+      return response.json();
+    }).then((review) => {
+        console.log(review);
+        DBHelper._updateReviews(review);
+      }).catch((error) => {
+        alert("You are offline, but your review will be saved locally for now and submitted once you get back online");
+        this._db.then((db) => {
+          if(!db)
+            return;
+        
+          const transaction = db.transaction('offlineReviews', 'readwrite');
+          const offlineStore = transaction.objectStore('offlineReviews');
+
+          offlineStore.put(data);
+        });
+        window.addEventListener('online', () => DBHelper._submitOfflineReviews());
+      });
   }
 
   static handleSubmit(event, id) {
