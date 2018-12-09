@@ -19,7 +19,6 @@ class DBHelper {
       const store = upgradeDb.createObjectStore('restaurants', {
         keyPath: 'id'
       });
-      console.log("Hello");
     });
 
     return this._db;
@@ -74,31 +73,35 @@ class DBHelper {
    * Fetch all restaurants.
    */
   static fetchRestaurants( callback ) {
-    console.log("Calling checkIDB");
     const cachedJSON = DBHelper._checkIDB();
     cachedJSON.then((restaurants) => {
-      console.log("cachedJSON resolved");
       if(restaurants.length > 0) {
-        console.log("Fetching and updating idb");
         DBHelper._fetchAndUpdateRestaurants();
-        console.log("Callback called");
         callback(null, restaurants);
         return Promise.resolve();
       } else {
-        console.log("restaurants store doesn't have any restaurants");
         throw new Error("No restaurants found");
       }
     }).catch((e) => {
-      console.log("cachedJSON rejected", e);
-      console.log("Fetching and entering into idb");
       DBHelper._fetchAndUpdateRestaurants(callback);
+    });
+  }
+
+  static _checkRestaurantInIDB(id) {
+    return this._db.then((db) => {
+      if(!db)
+        return Promise.reject();
+      const transaction = db.transaction('restaurants', 'readonly');
+      const store = transaction.objectStore('restaurants');
+      return store.get(parseInt(id)).then((restaurant) => {
+        return Promise.resolve(restaurant);
+      }).catch(() => {
+        return Promise.reject();
+      });
     })
   }
 
-  /**
-   * Fetch a restaurant by its ID.
-   */
-  static fetchRestaurantById(id, callback) {
+  static _getRestaurant(id, callback) {
     // fetch all restaurants with proper error handling.
     fetch( `http://localhost:1337/restaurants/${id}` )
       .then( ( response ) => {
@@ -107,10 +110,36 @@ class DBHelper {
         else
           throw new Error( `Request failed. Returned status of ${response.status}` );
       } ).then( ( restaurant ) => {
-        callback( null, restaurant );
+        this._db.then((db) => {
+          if(!db)
+            return;
+
+          const transaction = db.transaction('restaurants', 'readwrite');
+          const store = transaction.objectStore('restaurants');
+          
+          store.put(restaurant);
+        });
+        if (callback)
+          callback( null, restaurant );
       } ).catch( ( error ) => {
-        callback( 'Restaurant does not exist', null );
+        if(callback)
+          callback( 'Restaurant does not exist', null );
+        else
+          console.log("Failed to fetch restaurant: ", id);
       } );
+  }
+
+  /**
+   * Fetch a restaurant by its ID.
+   */
+  static fetchRestaurantById(id, callback) {
+    const cachedJSON = DBHelper._checkRestaurantInIDB(id);
+    cachedJSON.then((restaurant) => {
+      DBHelper._getRestaurant(id);
+      callback(null, restaurant);
+    }).catch((e) => {
+      DBHelper._getRestaurant(id, callback);
+    });
   }
 
   /**
