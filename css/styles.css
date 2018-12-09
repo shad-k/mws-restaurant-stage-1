@@ -106,7 +106,7 @@ nav h1 a {
 
 /* Add a color to all links inside the list */
 #breadcrumb li a {
-    color: #0275d8;
+    color: #0219d8;
     text-decoration: none;
 }
 
@@ -192,7 +192,7 @@ nav h1 a {
   font-size: 11pt;
 }
 #restaurants-list li a {
-  background-color: orange;
+  background-color: #8a5900;
   border-bottom: 3px solid #eee;
   color: #fff;
   display: inline-block;

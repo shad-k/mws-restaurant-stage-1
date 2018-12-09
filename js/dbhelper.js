@@ -94,7 +94,10 @@ class DBHelper {
       const transaction = db.transaction('restaurants', 'readonly');
       const store = transaction.objectStore('restaurants');
       return store.get(parseInt(id)).then((restaurant) => {
-        return Promise.resolve(restaurant);
+        if(restaurant)
+          return Promise.resolve(restaurant);
+        else
+          return Promise.reject();
       }).catch(() => {
         return Promise.reject();
       });
