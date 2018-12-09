@@ -438,4 +438,27 @@ class DBHelper {
 
     DBHelper._attemptReviewSubmit(data);
   }
+
+  static markFavorite(id, value) {
+    let url;
+    if(value) {
+      url = `http://localhost:1337/restaurants/${id}/?is_favorite=true`;
+    } else
+      url = `http://localhost:1337/restaurants/${id}/?is_favorite=false`;
+    fetch(url, {
+      method: "PUT"
+    }).then((response) => {
+      return response.json();
+    }).then((favorite) => {
+      this._db.then((db) => {
+        if(!db)
+          return;
+
+        const transaction =  db.transaction('restaurants', 'readwrite');
+        const store = transaction.objectStore('restaurants');
+
+        store.put(favorite);
+      });
+    });
+  }
 }

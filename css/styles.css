@@ -304,6 +304,19 @@ nav h1 a {
   min-height: 30px;
 }
 
+.favorite-btn {
+  padding: 10px;
+  background-color: #008a0b;
+  color: #FFF;
+  float: right;
+  position: relative;
+  top: 15px;
+}
+
+.favorite-btn.fav {
+  background-color: red;
+}
+
 
 @media screen and (min-width: 700px) {
   #restaurants-list li {

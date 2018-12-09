@@ -200,6 +200,22 @@ createRestaurantHTML = (restaurant) => {
   more.href = DBHelper.urlForRestaurant(restaurant);
   li.append(more)
 
+  const favorite = document.createElement('div');
+  favorite.className = `favorite-btn ${JSON.parse(restaurant.is_favorite || false) ? 'fav' : '' }`;
+  favorite.innerHTML = `${JSON.parse(restaurant.is_favorite || false) ? 'Unfavorite' : 'Add to Favorites' }`;
+  favorite.addEventListener('click', () => {
+    if(!JSON.parse(restaurant.is_favorite || false)) {
+      DBHelper.markFavorite(restaurant.id, true);
+      favorite.innerHTML = 'Unfavorite';
+      favorite.classList.add('fav');
+    } else {
+      DBHelper.markFavorite(restaurant.id, false);
+      favorite.innerHTML = 'Add to Favorites';
+      favorite.classList.remove('fav');
+    }
+  });
+  li.append(favorite)
+
   return li
 }
 
