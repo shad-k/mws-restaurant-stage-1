@@ -7,12 +7,14 @@ registerServiceWorker();
  * Initialize map as soon as the page is loaded.
  */
 document.addEventListener('DOMContentLoaded', (event) => {  
-  DBHelper.setupIDB().then(() => {
+  DBHelper.setupIDB().then( () => {
     initMap();
-    const reviewForm = document.querySelector('#reviews-form form');
-    if(reviewForm) {
-      reviewForm.addEventListener('submit', (e) => DBHelper.handleSubmit(e, getParameterByName('id')));
+    const reviewForm = document.querySelector( '#reviews-form form' );
+    if ( reviewForm ) {
+      reviewForm.addEventListener( 'submit', ( e ) => DBHelper.handleSubmit( e, getParameterByName( 'id' ) ) );
     }
+  } ).catch( () => {
+    initMap();
   });
 });
 
@@ -68,7 +70,7 @@ fetchRestaurantFromURL = (callback) => {
       callback(null, restaurant)
     });
 
-    DBHelper.fetchRestaurantReviews(id, (error, reviews) => {
+    DBHelper.fetchRestaurantReviews( id, ( error, reviews ) => {
       if(error) {
         console.log(error);
         return;

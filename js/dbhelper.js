@@ -303,7 +303,8 @@ class DBHelper {
       const restaurantIndex = reviewStore.index('restaurantId');
 
       return restaurantIndex.getAll(parseInt(id)).then((reviews) => {
-        if(typeof reviews !== 'undefined') {
+        if ( typeof reviews !== 'undefined' && reviews.length > 0 ) {
+          console.log( reviews );
           return Promise.resolve(reviews);
         }
 
@@ -343,11 +344,14 @@ class DBHelper {
   }
 
   static fetchRestaurantReviews(id, callback) {
+    console.log( "ID", id );
     const cachedReviews = DBHelper._checkReviewsInIDB(id);
-    cachedReviews.then((reviews) => {
+    cachedReviews.then( ( reviews ) => {
+      console.log( "cached reviews resolved" );
       DBHelper._getReviews(id);
       callback(null, reviews);
-    }).catch((e) => {
+    } ).catch( ( e ) => {
+      console.log( "cached reviews rejected" );
       DBHelper._getReviews(id, callback);
     });
   }

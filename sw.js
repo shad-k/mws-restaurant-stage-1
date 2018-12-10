@@ -1,4 +1,4 @@
-const assetCacheName = 'restaurant-review-cache-v3';
+const assetCacheName = 'restaurant-review-cache-v5';
 
 self.addEventListener('install', (event) => {
   caches.open(assetCacheName).then((cache) => {

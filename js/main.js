@@ -14,6 +14,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
     initMap(); // added
     fetchNeighborhoods();
     fetchCuisines();
+  } ).catch( () => {
+    initMap(); // added
+    fetchNeighborhoods();
+    fetchCuisines();
   });
 });
 
