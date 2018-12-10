@@ -186,7 +186,7 @@ createRestaurantHTML = (restaurant) => {
   image.alt = `Image of the restaurant: ${restaurant.name}`;
   li.append(image);
 
-  const name = document.createElement('h2');
+  const name = document.createElement('h3');
   name.innerHTML = restaurant.name;
   name.setAttribute( 'tabindex', 0 );
   li.append(name);
@@ -207,15 +207,17 @@ createRestaurantHTML = (restaurant) => {
   const favorite = document.createElement('div');
   favorite.className = `favorite-btn ${JSON.parse(restaurant.is_favorite || false) ? 'fav' : '' }`;
   favorite.innerHTML = `${JSON.parse(restaurant.is_favorite || false) ? 'Unfavorite' : 'Add to Favorites' }`;
-  favorite.addEventListener('click', () => {
+  favorite.addEventListener('click', function() {
     if(!JSON.parse(restaurant.is_favorite || false)) {
       DBHelper.markFavorite(restaurant.id, true);
-      favorite.innerHTML = 'Unfavorite';
-      favorite.classList.add('fav');
+      restaurant.is_favorite = true;
+      this.innerHTML = 'Unfavorite';
+      this.classList.add('fav');
     } else {
       DBHelper.markFavorite(restaurant.id, false);
-      favorite.innerHTML = 'Add to Favorites';
-      favorite.classList.remove('fav');
+      restaurant.is_favorite = false;
+      this.innerHTML = 'Add to Favorites';
+      this.classList.remove('fav');
     }
   });
   li.append(favorite)

@@ -113,6 +113,7 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
  */
 fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => {
   const hours = document.getElementById('restaurant-hours');
+  hours.innerHTML = '';
   for (let key in operatingHours) {
     const row = document.createElement('tr');
 
@@ -140,7 +141,7 @@ fetchReviews = (id) => {
  */
 fillReviewsHTML = (reviews = self.restaurant.reviews) => {
   const container = document.getElementById('reviews-container');
-  const title = document.createElement('h2');
+  const title = document.createElement('h3');
   title.innerHTML = 'Reviews';
   title.setAttribute( 'tabindex', 0 );
   container.appendChild(title);
